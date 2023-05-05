@@ -30,7 +30,7 @@
 #include "imgui.h"
 #include "imgui_impl_wgpu.h"
 #include <limits.h>
-#include <webgpu/webgpu.h>
+#include <wgpu.h>
 
 // Dear ImGui prototypes from imgui_internal.h
 extern ImGuiID ImHashData(const void* data_p, size_t data_size, ImU32 seed = 0);
@@ -159,49 +159,49 @@ static void SafeRelease(ImDrawVert*& res)
 static void SafeRelease(WGPUBindGroupLayout& res)
 {
     if (res)
-        wgpuBindGroupLayoutRelease(res);
+        wgpuBindGroupLayoutDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUBindGroup& res)
 {
     if (res)
-        wgpuBindGroupRelease(res);
+        wgpuBindGroupDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUBuffer& res)
 {
     if (res)
-        wgpuBufferRelease(res);
+        wgpuBufferDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPURenderPipeline& res)
 {
     if (res)
-        wgpuRenderPipelineRelease(res);
+        wgpuRenderPipelineDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUSampler& res)
 {
     if (res)
-        wgpuSamplerRelease(res);
+        wgpuSamplerDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUShaderModule& res)
 {
     if (res)
-        wgpuShaderModuleRelease(res);
+        wgpuShaderModuleDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUTextureView& res)
 {
     if (res)
-        wgpuTextureViewRelease(res);
+        wgpuTextureViewDrop(res);
     res = nullptr;
 }
 static void SafeRelease(WGPUTexture& res)
 {
     if (res)
-        wgpuTextureRelease(res);
+        wgpuTextureDrop(res);
     res = nullptr;
 }
 
@@ -230,7 +230,7 @@ static WGPUProgrammableStageDescriptor ImGui_ImplWGPU_CreateShaderModule(const c
 
     WGPUShaderModuleWGSLDescriptor wgsl_desc = {};
     wgsl_desc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-    wgsl_desc.source = wgsl_source;
+    wgsl_desc.code = wgsl_source;
 
     WGPUShaderModuleDescriptor desc = {};
     desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&wgsl_desc);
@@ -339,7 +339,7 @@ void ImGui_ImplWGPU_RenderDrawData(ImDrawData* draw_data, WGPURenderPassEncoder 
         if (fr->VertexBuffer)
         {
             wgpuBufferDestroy(fr->VertexBuffer);
-            wgpuBufferRelease(fr->VertexBuffer);
+            wgpuBufferDrop(fr->VertexBuffer);
         }
         SafeRelease(fr->VertexBufferHost);
         fr->VertexBufferSize = draw_data->TotalVtxCount + 5000;
@@ -363,7 +363,7 @@ void ImGui_ImplWGPU_RenderDrawData(ImDrawData* draw_data, WGPURenderPassEncoder 
         if (fr->IndexBuffer)
         {
             wgpuBufferDestroy(fr->IndexBuffer);
-            wgpuBufferRelease(fr->IndexBuffer);
+            wgpuBufferDrop(fr->IndexBuffer);
         }
         SafeRelease(fr->IndexBufferHost);
         fr->IndexBufferSize = draw_data->TotalIdxCount + 10000;
@@ -511,7 +511,7 @@ static void ImGui_ImplWGPU_CreateFontsTexture()
         WGPUSamplerDescriptor sampler_desc = {};
         sampler_desc.minFilter = WGPUFilterMode_Linear;
         sampler_desc.magFilter = WGPUFilterMode_Linear;
-        sampler_desc.mipmapFilter = WGPUFilterMode_Linear;
+        sampler_desc.mipmapFilter = WGPUMipmapFilterMode_Linear;
         sampler_desc.addressModeU = WGPUAddressMode_Repeat;
         sampler_desc.addressModeV = WGPUAddressMode_Repeat;
         sampler_desc.addressModeW = WGPUAddressMode_Repeat;
@@ -744,7 +744,7 @@ void ImGui_ImplWGPU_Shutdown()
     ImGui_ImplWGPU_InvalidateDeviceObjects();
     delete[] bd->pFrameResources;
     bd->pFrameResources = nullptr;
-    wgpuQueueRelease(bd->defaultQueue);
+    // wgpuQueueRelease(bd->defaultQueue);
     bd->wgpuDevice = nullptr;
     bd->numFramesInFlight = 0;
     bd->frameIndex = UINT_MAX;
